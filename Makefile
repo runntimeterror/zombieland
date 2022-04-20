@@ -1,4 +1,4 @@
-.PHONY: build clean deploy gomodgen
+.PHONY: build clean deploy
 
 build:
 	go mod tidy
