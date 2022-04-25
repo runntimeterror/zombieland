@@ -23,32 +23,23 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: go1.x
-
-# you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
-
-# you can add statements to the Lambda function's IAM Role here
-#  iam:
-#    role:
-#      statements:
-#        - Effect: "Allow"
-#          Action:
-#            - "s3:ListBucket"
-#          Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#        - Effect: "Allow"
-#          Action:
-#            - "s3:PutObject"
-#          Resource:
-#            Fn::Join:
-#              - ""
-#              - - "arn:aws:s3:::"
-#                - "Ref" : "ServerlessDeploymentBucket"
-#                - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  region: us-west-2
+  iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+      - "dynamodb:BatchGet*"
+      - "dynamodb:DescribeStream"
+      - "dynamodb:DescribeTable"
+      - "dynamodb:Get*"
+      - "dynamodb:Query"
+      - "dynamodb:Scan"
+      - "dynamodb:BatchWrite*"
+      - "dynamodb:CreateTable"
+      - "dynamodb:Delete*"
+      - "dynamodb:Update*"
+      - "dynamodb:PutItem"
+    Resource:
+      - arn:aws:dynamodb:us-west-2:070962172263:table/map_coordinates
 
 package:
   patterns:
@@ -68,6 +59,19 @@ functions:
       - httpApi:
           path: /world
           method: get
+  generateCoordinates:
+    handler: bin/generate_map_coordinates
+    events:
+      - httpApi:
+          path: /{latitude}/{longitude}
+          method: get
+          cors: true
+          request:
+            parameters:
+              paths:
+                latitude: true
+                longitude: true
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
