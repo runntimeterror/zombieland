@@ -31,7 +31,7 @@ const TABLE_NAME = "map_coordinates"
 
 type CoordinateBucket struct {
 	ZombieCoordinates  [][2]float64 `json:"ZombieCoordinates"`
-	LootBoxCoordinates [][2]float64 `json:"LootboxCoordinates"`
+	LootboxCoordinates [][2]float64 `json:"LootboxCoordinates"`
 	Timestamp          time.Time    `json:"Timestamp"`
 	CoordinateBucket   string       `json:"CoordinateBucket"`
 }
@@ -86,7 +86,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Respon
 	remainingcoordinates := [][2]int{}
 	outputBucket := CoordinateBucket{
 		ZombieCoordinates:  [][2]float64{},
-		LootBoxCoordinates: [][2]float64{},
+		LootboxCoordinates: [][2]float64{},
 		Timestamp:          currentTime,
 		CoordinateBucket:   fmt.Sprintf("%v:%v", bucketXCoord, bucketYCoord),
 	}
@@ -109,8 +109,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Respon
 				continue
 			}
 
-			outputBucket.ZombieCoordinates = append(outputBucket.LootBoxCoordinates, cb.ZombieCoordinates...)
-			outputBucket.LootBoxCoordinates = append(outputBucket.LootBoxCoordinates, cb.LootBoxCoordinates...)
+			outputBucket.ZombieCoordinates = append(outputBucket.ZombieCoordinates, cb.ZombieCoordinates...)
+			outputBucket.LootboxCoordinates = append(outputBucket.LootboxCoordinates, cb.LootboxCoordinates...)
 			continue
 		}
 
@@ -127,14 +127,14 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Respon
 	for _, coordinateBucket := range remainingcoordinates {
 		latitude := float64(coordinateBucket[0]) * RADIUS_IN_DEGREES
 		longitude := float64(coordinateBucket[1]) * RADIUS_IN_DEGREES
-		zCoords := generateRandomCoordinates(latitude, longitude, GENERATION_RADIUS_IN_DEGREES, 5)
-		lCoords := generateRandomCoordinates(latitude, longitude, GENERATION_RADIUS_IN_DEGREES, 5)
-		outputBucket.ZombieCoordinates = append(outputBucket.ZombieCoordinates, zCoords...)
-		outputBucket.LootBoxCoordinates = append(outputBucket.LootBoxCoordinates, lCoords...)
+		zombieCoords := generateRandomCoordinates(latitude, longitude, GENERATION_RADIUS_IN_DEGREES, 5)
+		lootboxCoords := generateRandomCoordinates(latitude, longitude, GENERATION_RADIUS_IN_DEGREES, 5)
+		outputBucket.ZombieCoordinates = append(outputBucket.ZombieCoordinates, zombieCoords...)
+		outputBucket.LootboxCoordinates = append(outputBucket.LootboxCoordinates, lootboxCoords...)
 
 		cb := CoordinateBucket{
-			ZombieCoordinates:  zCoords,
-			LootBoxCoordinates: lCoords,
+			ZombieCoordinates:  zombieCoords,
+			LootboxCoordinates: lootboxCoords,
 			Timestamp:          currentTime,
 			CoordinateBucket:   fmt.Sprintf("%v:%v", coordinateBucket[0], coordinateBucket[1]),
 		}
@@ -173,12 +173,6 @@ func getCoordinateBucketFromDB(svc *dynamodb.DynamoDB, coordinateBucket string) 
 }
 
 func putCoordinateIntoDB(svc *dynamodb.DynamoDB, bucket CoordinateBucket) error {
-	// coordinates := CoordinateBucket{
-	// ZombieCoordinates:  outputZombieCoords,
-	// LootBoxCoordinates: outputLootboxCoords,
-	// Timestamp:          currentTime,
-	// CoordinateBucket:   fmt.Sprintf("%v:%v", bucketXCoord, bucketYCoord),
-	// }
 	dynamoItem, err := dynamodbattribute.MarshalMap(bucket)
 	if err != nil {
 		return fmt.Errorf("failed to marshal data into dynamoItem: %v, error: %v\n", bucket, err)
