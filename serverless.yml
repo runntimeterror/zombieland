@@ -24,7 +24,8 @@ provider:
   name: aws
   runtime: go1.x
   region: us-west-2
-  cors: true
+  httpApi:
+    cors: true
   iamRoleStatements:
   - Effect: "Allow"
     Action:
