@@ -75,7 +75,7 @@ functions:
     handler: bin/user
     events:
       - httpApi:
-          path: /{userId}
+          path: /user/userId}
           method: get
           cors: true
           request:
@@ -83,7 +83,7 @@ functions:
               paths:
                 userId: true
       - httpApi:
-          path: /
+          path: /user
           method: post
           cors: true
 
