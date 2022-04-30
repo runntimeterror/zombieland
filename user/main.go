@@ -29,9 +29,6 @@ func main() {
 }
 
 func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResponse, error) {
-	fmt.Println("request.Path", request.RawPath)
-	fmt.Println("request.Path", request.PathParameters)
-	fmt.Println("request.Path", request)
 	var user User
 	//var userID string
 
@@ -79,10 +76,10 @@ func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse
 		TableName: aws.String(TABLE_NAME),
 	}
 
-	_, err = db.PutItem(input)
-
+	op, err := db.PutItem(input)
+	fmt.Println(op)
 	if err != nil {
-		fmt.Println("Failed to write to dynamo")
+		fmt.Println("Failed to write to dynamo", err)
 		return response(err.Error(), http.StatusInternalServerError), nil
 	}
 
