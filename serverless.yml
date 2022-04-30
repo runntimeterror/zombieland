@@ -72,10 +72,13 @@ functions:
     handler: bin/user
     events:
       - httpApi:
-          path: /user/{userId}
+          path: /getuser/{userId}
           method: get
       - httpApi:
-          path: /user
+          path: /saveuser
+          method: post
+      - httpApi:
+          path: /updateuser
           method: post
 
 
