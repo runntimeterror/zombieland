@@ -40,6 +40,7 @@ provider:
       - "dynamodb:PutItem"
     Resource:
       - arn:aws:dynamodb:us-west-2:070962172263:table/map_coordinates
+      - arn:aws:dynamodb:us-west-2:070962172263:table/user
 
 package:
   patterns:
@@ -67,10 +68,25 @@ functions:
           method: get
           cors: true
           request:
-            parameters:
               paths:
                 latitude: true
                 longitude: true
+  user:
+    handler: bin/user
+    events:
+      - httpApi:
+          path: /{userId}
+          method: get
+          cors: true
+          request:
+            parameters:
+              paths:
+                userId: true
+      - httpApi:
+          path: /
+          method: post
+          cors: true
+
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
