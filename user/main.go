@@ -30,8 +30,9 @@ func main() {
 	lambda.Start(Handler)
 }
 
-func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	fmt.Println("request.Path", request.Path)
+func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResponse, error) {
+	fmt.Println("request.Path", request.RawPath)
+	fmt.Println("request.Path", request.PathParameters)
 	fmt.Println("request.Path", request)
 	var user User
 	var userID string
@@ -42,8 +43,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
 	}
 
-	fmt.Println("request method", request.HTTPMethod)
-	switch request.HTTPMethod {
+	fmt.Println("request method", request.Body)
+	switch request.RawPath {
 	case "GET":
 		return GetUserDetails(db, userID)
 	case "POST":
