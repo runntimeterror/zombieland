@@ -35,7 +35,7 @@ func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResp
 	fmt.Println("request.Path", request.PathParameters)
 	fmt.Println("request.Path", request)
 	var user User
-	var userID string
+	//var userID string
 
 	err := json.Unmarshal([]byte(request.Body), &user)
 
@@ -43,13 +43,12 @@ func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResp
 		return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
 	}
 
-	fmt.Println("request method", request.Body)
 	switch request.RawPath {
-	case "GET":
-		return GetUserDetails(db, userID)
-	case "POST":
+	case "/getuser/1":
+		return GetUserDetails(db, "1")
+	case "/saveuser":
 		return SaveUser(db, &user)
-	case "PUT":
+	case "/updateuser":
 		return UpdateUser(db, &user)
 	}
 
