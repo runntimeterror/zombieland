@@ -72,7 +72,7 @@ functions:
     handler: bin/user
     events:
       - httpApi:
-          path: /user/userId}
+          path: /user/{userId}
           method: get
       - httpApi:
           path: /user
