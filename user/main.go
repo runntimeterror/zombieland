@@ -32,20 +32,24 @@ func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResp
 	var user User
 	//var userID string
 
-	err := json.Unmarshal([]byte(request.Body), &user)
-
-	if err != nil {
-		return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
-	}
-
 	var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("us-east-2"))
 
 	switch request.RawPath {
 	case "/getuser/1":
-		return GetUserDetails(db, "1")
+		return GetUserDetails(db, request.PathParameters["userId"])
 	case "/saveuser":
+		err := json.Unmarshal([]byte(request.Body), &user)
+
+		if err != nil {
+			return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
+		}
 		return SaveUser(db, &user)
 	case "/updateuser":
+		err := json.Unmarshal([]byte(request.Body), &user)
+
+		if err != nil {
+			return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
+		}
 		return UpdateUser(db, &user)
 	}
 
