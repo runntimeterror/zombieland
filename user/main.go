@@ -33,7 +33,7 @@ func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResp
 	var user User
 	//var userID string
 
-	var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("us-east-2"))
+	var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("us-west-2"))
 
 	path := request.RawPath
 
