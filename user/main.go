@@ -20,9 +20,13 @@ const TABLE_NAME = "user"
 var errorLogger = log.New(os.Stderr, "ERROR ", log.Llongfile)
 
 type User struct {
-	UserId string `json:"userID"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
+	UserId    string              `json:"userId" `
+	FirstName string              `json:"firstname,omitempty"`
+	LastName  string              `json:"lastname,omitempty"`
+	Email     string              `json:"email,omitempty"`
+	Steps     int64               `json:"steps,omitempty"`
+	Level     int                 `json:"level,omitempty"`
+	Rewards   map[string][]string `json:"rewards,omitempty"`
 }
 
 func main() {
@@ -78,7 +82,7 @@ func GetUserDetails(db *dynamodb.DynamoDB, userID string) (events.APIGatewayProx
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("user"),
 		Key: map[string]*dynamodb.AttributeValue{
-			"userID": {
+			"userId": {
 				S: aws.String(userID),
 			},
 		},
