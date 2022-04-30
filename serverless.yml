@@ -68,20 +68,12 @@ functions:
       - httpApi:
           path: /{latitude}/{longitude}
           method: get
-          request:
-              paths:
-                latitude: true
-                longitude: true
   user:
     handler: bin/user
     events:
       - httpApi:
           path: /user/userId}
           method: get
-          request:
-            parameters:
-              paths:
-                userId: true
       - httpApi:
           path: /user
           method: post
