@@ -24,6 +24,7 @@ provider:
   name: aws
   runtime: go1.x
   region: us-west-2
+  cors: true
   iamRoleStatements:
   - Effect: "Allow"
     Action:
@@ -66,7 +67,6 @@ functions:
       - httpApi:
           path: /{latitude}/{longitude}
           method: get
-          cors: true
           request:
               paths:
                 latitude: true
@@ -77,7 +77,6 @@ functions:
       - httpApi:
           path: /user/userId}
           method: get
-          cors: true
           request:
             parameters:
               paths:
@@ -85,7 +84,6 @@ functions:
       - httpApi:
           path: /user
           method: post
-          cors: true
 
 
 #    The following are a few example events you can configure
