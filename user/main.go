@@ -10,25 +10,30 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"log"
 	"net/http"
+	"os"
 )
 
 var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("us-east-1"))
+
 const TABLE_NAME = "user"
 
+var errorLogger = log.New(os.Stderr, "ERROR ", log.Llongfile)
+
 type User struct {
-	UserId   string `json:"userID"`
+	UserId string `json:"userID"`
 	Title  string `json:"title"`
 	Author string `json:"author"`
 }
-
 
 func main() {
 	lambda.Start(Handler)
 }
 
-func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse , error) {
+func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var user User
+	var userID string
 
 	err := json.Unmarshal([]byte(request.Body), &user)
 
@@ -36,51 +41,76 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
 	}
 
-	err = SaveUser(db, &user)
-
-	if err != nil {
-		return response(err.Error(), http.StatusInternalServerError), nil
+	switch request.HTTPMethod {
+	case "GET":
+		return GetUserDetails(db, userID)
+	case "POST":
+		return SaveUser(db, &user)
+	case "PUT":
+		return UpdateUser(db, &user)
 	}
 
-	return response("Successfully wrote monster to log.", http.StatusOK), nil
+	return response("", http.StatusMethodNotAllowed), nil
 }
 
-func response(body string, statusCode int) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse {
-		StatusCode: statusCode,
-		Body: string(body),
-		Headers: map[string]string {
+func response(body string, status int) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: status,
+		Body:       body,
+		Headers: map[string]string{
 			"Content-Type":                "application/json",
 			"Access-Control-Allow-Origin": "*",
 		},
 	}
 }
 
-func SaveUser(db *dynamodb.DynamoDB, user *User) error{
+func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse, error) {
 	userMap, err := dynamodbattribute.MarshalMap(&user)
 
 	if err != nil {
 		fmt.Println("Failed to marshal to dynamo map")
-		return err
+		return response(err.Error(), http.StatusBadRequest), nil
 	}
-
 
 	input := &dynamodb.PutItemInput{
 		Item:      userMap,
 		TableName: aws.String(TABLE_NAME),
 	}
 
-	_, writeErr := db.PutItem(input)
+	_, err = db.PutItem(input)
 
-	if writeErr != nil {
+	if err != nil {
 		fmt.Println("Failed to write to dynamo")
-		return writeErr
+		return response(err.Error(), http.StatusInternalServerError), nil
 	}
 
-	return nil
+	return response("success", http.StatusOK), nil
 }
 
-func GetUserDetails(db *dynamodb.DynamoDB,userID string) (*User, error) {
+func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse, error) {
+	userMap, err := dynamodbattribute.MarshalMap(&user)
+
+	if err != nil {
+		fmt.Println("Failed to marshal to dynamo map")
+		return response(err.Error(), http.StatusBadRequest), nil
+	}
+
+	input := &dynamodb.PutItemInput{
+		Item:      userMap,
+		TableName: aws.String(TABLE_NAME),
+	}
+
+	_, err = db.PutItem(input)
+
+	if err != nil {
+		fmt.Println("Failed to write to dynamo")
+		return response(err.Error(), http.StatusInternalServerError), nil
+	}
+
+	return response("success", http.StatusOK), nil
+}
+
+func GetUserDetails(db *dynamodb.DynamoDB, userID string) (events.APIGatewayProxyResponse, error) {
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(TABLE_NAME),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -89,8 +119,17 @@ func GetUserDetails(db *dynamodb.DynamoDB,userID string) (*User, error) {
 			},
 		},
 	})
+	if err != nil {
+		return response(err.Error(), http.StatusBadRequest), nil
+	}
 
 	user := &User{}
 	err = dynamodbattribute.UnmarshalMap(result.Item, user)
-	return user, err
+
+	body, err := json.Marshal(user)
+	if err != nil {
+		return response(err.Error(), http.StatusInternalServerError), nil
+	}
+
+	return response(string(body), http.StatusOK), nil
 }
