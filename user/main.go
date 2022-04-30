@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 const TABLE_NAME = "user"
@@ -34,8 +35,14 @@ func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResp
 
 	var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("us-east-2"))
 
-	switch request.RawPath {
-	case "/getuser/1":
+	path := request.RawPath
+
+	if strings.Contains(path, "getuser") {
+		path = "/getuser"
+	}
+
+	switch path {
+	case "/getuser":
 		return GetUserDetails(db, request.PathParameters["userId"])
 	case "/saveuser":
 		err := json.Unmarshal([]byte(request.Body), &user)
@@ -67,6 +74,30 @@ func response(body string, status int) events.APIGatewayProxyResponse {
 	}
 }
 
+func GetUserDetails(db *dynamodb.DynamoDB, userID string) (events.APIGatewayProxyResponse, error) {
+	result, err := db.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String("user"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"userID": {
+				S: aws.String(userID),
+			},
+		},
+	})
+	if err != nil {
+		return response(err.Error(), http.StatusBadRequest), nil
+	}
+
+	user := &User{}
+	err = dynamodbattribute.UnmarshalMap(result.Item, user)
+
+	body, err := json.Marshal(user)
+	if err != nil {
+		return response(err.Error(), http.StatusInternalServerError), nil
+	}
+
+	return response(string(body), http.StatusOK), nil
+}
+
 func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse, error) {
 	userMap, err := dynamodbattribute.MarshalMap(&user)
 
@@ -77,7 +108,7 @@ func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse
 
 	input := &dynamodb.PutItemInput{
 		Item:      userMap,
-		TableName: aws.String(TABLE_NAME),
+		TableName: aws.String("user"),
 	}
 
 	op, err := db.PutItem(input)
@@ -111,28 +142,4 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 	}
 
 	return response("success", http.StatusOK), nil
-}
-
-func GetUserDetails(db *dynamodb.DynamoDB, userID string) (events.APIGatewayProxyResponse, error) {
-	result, err := db.GetItem(&dynamodb.GetItemInput{
-		TableName: aws.String(TABLE_NAME),
-		Key: map[string]*dynamodb.AttributeValue{
-			"CoordinateBucket": {
-				S: aws.String(userID),
-			},
-		},
-	})
-	if err != nil {
-		return response(err.Error(), http.StatusBadRequest), nil
-	}
-
-	user := &User{}
-	err = dynamodbattribute.UnmarshalMap(result.Item, user)
-
-	body, err := json.Marshal(user)
-	if err != nil {
-		return response(err.Error(), http.StatusInternalServerError), nil
-	}
-
-	return response(string(body), http.StatusOK), nil
 }
