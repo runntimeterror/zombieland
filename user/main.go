@@ -14,8 +14,6 @@ import (
 	"os"
 )
 
-var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("us-east-1"))
-
 const TABLE_NAME = "user"
 
 var errorLogger = log.New(os.Stderr, "ERROR ", log.Llongfile)
@@ -42,6 +40,8 @@ func Handler(request events.APIGatewayV2HTTPRequest) (events.APIGatewayProxyResp
 	if err != nil {
 		return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
 	}
+
+	var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion("us-east-2"))
 
 	switch request.RawPath {
 	case "/getuser/1":
