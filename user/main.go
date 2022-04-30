@@ -41,6 +41,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 		return response("Couldn't unmarshal json into user struct", http.StatusBadRequest), nil
 	}
 
+	fmt.Println("request method", request.HTTPMethod)
 	switch request.HTTPMethod {
 	case "GET":
 		return GetUserDetails(db, userID)
