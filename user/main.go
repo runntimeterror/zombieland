@@ -126,19 +126,31 @@ func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse
 }
 
 func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse, error) {
-	userMap, err := dynamodbattribute.MarshalMap(&user)
+	//userMap, err := dynamodbattribute.MarshalMap(&user)
+	//
+	//if err != nil {
+	//	fmt.Println("Failed to marshal to dynamo map")
+	//	return response(err.Error(), http.StatusBadRequest), nil
+	//}
 
-	if err != nil {
-		fmt.Println("Failed to marshal to dynamo map")
-		return response(err.Error(), http.StatusBadRequest), nil
+	update, err := dynamodbattribute.MarshalMap(map[string]interface{}{
+		"steps":   user.Steps,
+		"level":   user.Level,
+		"rewards": user.Rewards,
+	})
+
+	input := &dynamodb.UpdateItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"userId": {
+				S: aws.String(user.UserId),
+			},
+		},
+		ExpressionAttributeValues: update,
+		UpdateExpression:          aws.String("SET steps =:steps, level =:levele, rewards = :rewards"),
+		TableName:                 aws.String(TABLE_NAME),
 	}
 
-	input := &dynamodb.PutItemInput{
-		Item:      userMap,
-		TableName: aws.String(TABLE_NAME),
-	}
-
-	_, err = db.PutItem(input)
+	_, err = db.UpdateItem(input)
 
 	if err != nil {
 		fmt.Println("Failed to write to dynamo")
