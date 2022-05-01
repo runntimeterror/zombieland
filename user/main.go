@@ -26,7 +26,7 @@ type User struct {
 	LastName  string              `json:"lastname"`
 	Email     string              `json:"email"`
 	Steps     int64               `json:"steps"`
-	Level     int                 `json:"level"`
+	Level     int                 `json:"user_level"`
 	Rewards   map[string][]string `json:"rewards"`
 }
 
@@ -151,7 +151,7 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 				N: aws.String(strconv.Itoa(user.Level)),
 			},
 		},
-		UpdateExpression: aws.String("set steps =:s, level = :l"),
+		UpdateExpression: aws.String("set steps =:s, user_level = :l"),
 		TableName:        aws.String(TABLE_NAME),
 	}
 
