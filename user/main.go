@@ -21,12 +21,12 @@ var errorLogger = log.New(os.Stderr, "ERROR ", log.Llongfile)
 
 type User struct {
 	UserId    string              `json:"userId" `
-	FirstName string              `json:"firstname,omitempty"`
-	LastName  string              `json:"lastname,omitempty"`
-	Email     string              `json:"email,omitempty"`
-	Steps     int64               `json:"steps,omitempty"`
-	Level     int                 `json:"level,omitempty"`
-	Rewards   map[string][]string `json:"rewards,omitempty"`
+	FirstName string              `json:"firstname"`
+	LastName  string              `json:"lastname"`
+	Email     string              `json:"email"`
+	Steps     int64               `json:"steps"`
+	Level     int                 `json:"level"`
+	Rewards   map[string][]string `json:"rewards"`
 }
 
 func main() {
