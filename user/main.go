@@ -140,7 +140,6 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 	}
 	update, err := dynamodbattribute.MarshalMap(updateInfo{
 		Steps:   user.Steps,
-		Level:   user.Level,
 		Rewards: user.Rewards,
 	})
 
