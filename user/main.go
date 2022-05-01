@@ -135,7 +135,6 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 
 	type updateInfo struct {
 		Steps   int64               `json:"steps"`
-		Level   int                 `json:"level"`
 		Rewards map[string][]string `json:"rewards"`
 	}
 	update, err := dynamodbattribute.MarshalMap(updateInfo{
