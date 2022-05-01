@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -136,31 +137,25 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 	//	return response(err.Error(), http.StatusBadRequest), nil
 	//}
 
-	type UpdateInfo struct {
-		Steps int64 `json:"s"`
-	}
-
-	update, err := dynamodbattribute.MarshalMap(UpdateInfo{
-		Steps: user.Steps,
-	})
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return response(err.Error(), http.StatusBadRequest), nil
-	}
-
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"userId": {
 				S: aws.String(user.UserId),
 			},
 		},
-		ExpressionAttributeValues: update,
-		UpdateExpression:          aws.String("set steps =:s"),
-		TableName:                 aws.String(TABLE_NAME),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":s": {
+				N: aws.String(strconv.Itoa(int(user.Steps))),
+			},
+			":l": {
+				N: aws.String(strconv.Itoa(user.Level)),
+			},
+		},
+		UpdateExpression: aws.String("set steps =:s, level = :l"),
+		TableName:        aws.String(TABLE_NAME),
 	}
 
-	_, err = db.UpdateItem(input)
+	_, err := db.UpdateItem(input)
 
 	if err != nil {
 		fmt.Println("Failed to write to dynamo")
