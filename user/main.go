@@ -133,10 +133,15 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 	//	return response(err.Error(), http.StatusBadRequest), nil
 	//}
 
-	update, err := dynamodbattribute.MarshalMap(map[string]interface{}{
-		"steps":   user.Steps,
-		"level":   user.Level,
-		"rewards": user.Rewards,
+	type updateInfo struct {
+		Steps   int64               `json:"steps"`
+		Level   int                 `json:"level"`
+		Rewards map[string][]string `json:"rewards"`
+	}
+	update, err := dynamodbattribute.MarshalMap(updateInfo{
+		Steps:   user.Steps,
+		Level:   user.Level,
+		Rewards: user.Rewards,
 	})
 
 	input := &dynamodb.UpdateItemInput{
