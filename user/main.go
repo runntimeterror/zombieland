@@ -146,7 +146,7 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 			},
 		},
 		ExpressionAttributeValues: update,
-		UpdateExpression:          aws.String("SET steps =:steps, level =:levele, rewards = :rewards"),
+		UpdateExpression:          aws.String("SET steps =:steps, level =:level, rewards = :rewards"),
 		TableName:                 aws.String(TABLE_NAME),
 	}
 
