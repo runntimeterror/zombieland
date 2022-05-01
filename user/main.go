@@ -143,9 +143,7 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 	}
 
 	update, err := dynamodbattribute.MarshalMap(UpdateInfo{
-		Steps:   user.Steps,
-		Level:   user.Level,
-		Rewards: user.Rewards,
+		Steps: user.Steps,
 	})
 
 	if err != nil {
@@ -160,7 +158,7 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 			},
 		},
 		ExpressionAttributeValues: update,
-		UpdateExpression:          aws.String("set steps =:s, level = :l,  rewards = :r"),
+		UpdateExpression:          aws.String("set steps =:s"),
 		TableName:                 aws.String(TABLE_NAME),
 	}
 
