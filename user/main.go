@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -110,6 +111,9 @@ func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse
 		return response(err.Error(), http.StatusBadRequest), nil
 	}
 
+	if user.Rewards == nil {
+		user.Rewards = make(map[string][]string, 0)
+	}
 	input := &dynamodb.PutItemInput{
 		Item:      userMap,
 		TableName: aws.String("user"),
@@ -137,10 +141,6 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 		Steps   int64               `json:"steps"`
 		Rewards map[string][]string `json:"rewards"`
 	}
-	update, err := dynamodbattribute.MarshalMap(updateInfo{
-		Steps:   user.Steps,
-		Rewards: user.Rewards,
-	})
 
 	input := &dynamodb.UpdateItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
@@ -148,12 +148,15 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 				S: aws.String(user.UserId),
 			},
 		},
-		ExpressionAttributeValues: update,
-		UpdateExpression:          aws.String("SET steps =:steps,  rewards = :rewards"),
-		TableName:                 aws.String(TABLE_NAME),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":steps": &dynamodb.AttributeValue{N: aws.String(strconv.FormatInt(user.Steps, 10))},
+			":level": &dynamodb.AttributeValue{N: aws.String(string(rune(user.Level)))},
+		},
+		UpdateExpression: aws.String("set steps =:steps, level = :level,  rewards = :rewards"),
+		TableName:        aws.String(TABLE_NAME),
 	}
 
-	_, err = db.UpdateItem(input)
+	_, err := db.UpdateItem(input)
 
 	if err != nil {
 		fmt.Println("Failed to write to dynamo")
