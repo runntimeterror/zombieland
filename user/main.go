@@ -3,17 +3,18 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"log"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
 )
 
 const TABLE_NAME = "user"
@@ -27,7 +28,7 @@ type User struct {
 	Email     string              `json:"email"`
 	Steps     int64               `json:"steps"`
 	Level     int                 `json:"user_level"`
-	Rewards   map[string][]string `json:"rewards"`
+	Inventory map[string][]string `json:"inventory"`
 }
 
 func main() {
@@ -111,8 +112,8 @@ func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse
 		return response(err.Error(), http.StatusBadRequest), nil
 	}
 
-	if user.Rewards == nil {
-		user.Rewards = make(map[string][]string, 0)
+	if user.Inventory == nil {
+		user.Inventory = make(map[string][]string, 0)
 	}
 	input := &dynamodb.PutItemInput{
 		Item:      userMap,
@@ -130,7 +131,7 @@ func SaveUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse
 }
 
 func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyResponse, error) {
-	userMap, err := dynamodbattribute.MarshalMap(&user.Rewards)
+	userMap, err := dynamodbattribute.MarshalMap(&user.Inventory)
 
 	if err != nil {
 		fmt.Println("Failed to marshal to dynamo map")
@@ -154,7 +155,7 @@ func UpdateUser(db *dynamodb.DynamoDB, user *User) (events.APIGatewayProxyRespon
 				M: userMap,
 			},
 		},
-		UpdateExpression: aws.String("set steps =:s, user_level = :l ,  rewards =:r"),
+		UpdateExpression: aws.String("set steps =:s, user_level = :l ,  inventory =:r"),
 		TableName:        aws.String(TABLE_NAME),
 	}
 
