@@ -24,6 +24,27 @@ provider:
   name: aws
   runtime: go1.x
   region: us-west-2
+  httpApi:
+    cors: true
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:BatchGet*"
+            - "dynamodb:DescribeStream"
+            - "dynamodb:DescribeTable"
+            - "dynamodb:Get*"
+            - "dynamodb:Query"
+            - "dynamodb:Scan"
+            - "dynamodb:BatchWrite*"
+            - "dynamodb:CreateTable"
+            - "dynamodb:Delete*"
+            - "dynamodb:Update*"
+            - "dynamodb:PutItem"
+          Resource:
+            - arn:aws:dynamodb:us-west-2:070962172263:table/map_coordinates
+            - arn:aws:dynamodb:us-west-2:070962172263:table/user
   iamRoleStatements:
   - Effect: "Allow"
     Action:
@@ -40,6 +61,7 @@ provider:
       - "dynamodb:PutItem"
     Resource:
       - arn:aws:dynamodb:us-west-2:070962172263:table/map_coordinates
+      - arn:aws:dynamodb:us-west-2:070962172263:table/user
 
 package:
   patterns:
@@ -65,13 +87,21 @@ functions:
       - httpApi:
           path: /{latitude}/{longitude}
           method: get
-          cors: true
-          request:
-            parameters:
-              paths:
-                latitude: true
-                longitude: true
-
+  user:
+    handler: bin/user
+    events:
+      - httpApi:
+            path: /getusers
+            method: get
+      - httpApi:
+          path: /getuser/{userId}
+          method: get
+      - httpApi:
+          path: /saveuser
+          method: post
+      - httpApi:
+          path: /updateuser
+          method: post
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

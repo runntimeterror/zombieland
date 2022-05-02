@@ -1,2 +1,39 @@
 
-https://silent-somersault-178.notion.site/af31153591b245479f98e2dbdf396df4?v=8854cd9358ba453991e17d8a85420731
+
+
+#### Insert User
+``` shell
+curl --location --request POST 'https://{{domain}}/saveuser' \
+--header 'Content-Type: application/json' \
+--data '{
+    "userId": "15",
+    "firstname": "ola",
+    "lastname": "asdasdaqw",
+    "email": "emailid@asome",
+    "rewards": {
+        "weapons": [],
+        "food": []
+    }
+}'
+```
+
+#### Get User
+```shell
+curl --location --request GET 'https://{{domain}}/getuser/{userId}'
+```
+
+
+#### Update User
+```shell
+curl --location --request POST 'https://{{domain}}/updateuser' \
+--header 'Content-Type: application/json' \
+--data '{
+    "userId": "15",
+    "steps": 1022,
+    "user_level": 2,
+    "rewards": {
+        "weapons": ["axe","guns"],
+        "food": ["peanuts"]
+    }
+}'
+```

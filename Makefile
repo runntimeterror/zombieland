@@ -6,6 +6,7 @@ build:
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/hello hello/main.go
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/world world/main.go
 	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/generate_map_coordinates generate_map_coordinates/main.go
+	env GOARCH=amd64 GOOS=linux go build -ldflags="-s -w" -o bin/user user/main.go
 
 clean:
 	rm -rf ./bin ./vendor go.sum
