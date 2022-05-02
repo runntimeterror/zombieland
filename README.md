@@ -3,16 +3,16 @@
 
 #### Insert User
 ``` shell
-curl --location --request POST 'https://{{domain}}/saveuser' \
+curl --location --request POST '{{domain}}/saveuser' \
 --header 'Content-Type: application/json' \
 --data '{
-    "userId": "15",
+    "userId": "18",
     "firstname": "ola",
     "lastname": "asdasdaqw",
     "email": "emailid@asome",
-    "rewards": {
+    "inventory": {
         "weapons": [],
-        "food": []
+        "essentials": []
     }
 }'
 ```
@@ -25,15 +25,15 @@ curl --location --request GET 'https://{{domain}}/getuser/{userId}'
 
 #### Update User
 ```shell
-curl --location --request POST 'https://{{domain}}/updateuser' \
+curl --location --request POST '{{domain}}/updateuser' \
 --header 'Content-Type: application/json' \
 --data '{
-    "userId": "15",
+    "userId": "18",
     "steps": 1022,
     "user_level": 2,
-    "rewards": {
+    "inventory": {
         "weapons": ["axe","guns"],
-        "food": ["peanuts"]
+        "essentials": ["peanuts"]
     }
 }'
 ```
